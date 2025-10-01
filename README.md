@@ -2,9 +2,9 @@
 
 ## Para rodar:
 
-- Dentro de client/java-lib, rodar:
+- Dentro de java-lib, rodar:
 
-``` mvn compile ```
+ ``` mvn compile ```
     
 - Para rodar o server:
 
