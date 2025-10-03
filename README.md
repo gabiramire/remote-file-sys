@@ -45,7 +45,7 @@ Se o teste funcionar, um teste.txt será criado escrito "HELLO"
         remote_file_pb2.py      # gerado do .proto
         remote_file_pb2_grpc.py # gerado do .proto
 
-      demo/
+      client/
         client_python.py        # cliente exemplo (Python)
 
     pom.xml                    # para o maven
