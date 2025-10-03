@@ -1,0 +1,55 @@
+syntax = "proto3";
+package remotefs;
+
+option java_multiple_files = true;
+option java_package = "remotefs";
+option java_outer_classname = "RemoteFileSystemOuterClass";
+
+// Serviço de sistema de arquivos remoto (sem cache por enquanto)
+service RemoteFileSystem {
+  rpc Abre     (OpenRequest)  returns (OpenResponse);
+  rpc Le       (ReadRequest)  returns (ReadResponse);
+  rpc Escreve  (WriteRequest) returns (WriteResponse);
+  rpc Fecha    (CloseRequest) returns (CloseResponse);
+}
+
+// ---- Mensagens ----
+
+message OpenRequest {
+  string nomeArquivo = 1;   // caminho no servidor; cria se não existir
+}
+
+message OpenResponse {
+  int32 codigoErro = 1;     // 0 OK; <0 erro
+  int32 descritor  = 2;     // identificador do arquivo no servidor
+}
+
+message ReadRequest {
+  int32 descritor = 1;
+  int32 posicao   = 2;      // offset
+  int32 tamanho   = 3;      // bytes desejados
+}
+
+message ReadResponse {
+  int32 codigoErro = 1;
+  bytes conteudo   = 2;     // bytes lidos (pode ser < tamanho)
+}
+
+message WriteRequest {
+  int32 descritor = 1;
+  int32 posicao   = 2;
+  bytes conteudo  = 3;      // bytes a escrever
+}
+
+message WriteResponse {
+  int32 codigoErro    = 1;
+  int32 bytesEscritos = 2;
+}
+
+message CloseRequest {
+  int32 descritor = 1;
+}
+
+message CloseResponse {
+  int32 codigoErro = 1;
+}
