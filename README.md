@@ -16,6 +16,18 @@
  
 Se o teste funcionar, um teste.txt será criado escrito "HELLO"
 
+## Para rodar o client em Python:
+Executar no root:
+``` python3 -m venv venv ```
+
+(Em caso de erro, instalar o venv: ``` sudo apt install python3-venv ```)
+
+``` . venv/bin/activate ```
+
+``` pip install -r client_python/requirements.txt ```
+
+ ``` python3 -m client_python.client.client-python ```
+
         
 ## Estrutura de Arquivos por enquanto:
 

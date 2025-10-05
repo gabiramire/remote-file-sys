@@ -1,2 +1,5 @@
 teste.txt
 /target
+.vscode/
+__pycache__/
+/venv/
