@@ -71,7 +71,9 @@ class RemoteFileClient:
                 self.hits += 1
             else:
                 self.misses += 1
-                req = pb2.ReadRequest(descritor=fd, posicao=block_start, tamanho=block_size)
+                req = pb2.ReadRequest(
+                    descritor=fd, posicao=block_start, tamanho=block_size
+                )
                 res = self.stub.Le(req)
 
                 if res.codigoErro != 0:
