@@ -8,10 +8,8 @@ from client_python import remote_file_pb2_grpc as pb2_grpc
 
 
 class RemoteFileClient:
-    """Cliente Python do sistema de arquivos remoto, compatível com o servidor Java."""
-
     def __init__(self, config_path="config/config.txt"):
-        # ---- Configuração ----
+        # Configuração
         config = configparser.ConfigParser()
         config.read(config_path)
         section = config["DEFAULT"] if "DEFAULT" in config else config["config"]
@@ -21,19 +19,17 @@ class RemoteFileClient:
         self.block_size = int(section.get("block_size", "4096"))
         self.cache_capacity = int(section.get("cache_max_entries", "100"))
 
-        # ---- Canal gRPC ----
+        # Canal gRPC
         self.channel = grpc.insecure_channel(f"{host}:{port}")
         self.stub = pb2_grpc.RemoteFileSystemStub(self.channel)
 
-        # ---- Cache (LRU) ----
+        # Cache (LRU)
         self.cache = OrderedDict()
         self.versao_por_fd = {}
         self.hits = 0
         self.misses = 0
 
         print(f"[PythonClient] Conectado a {host}:{port}")
-
-    # ------------------------------------------------------------
 
     def abre(self, nome_arquivo: str) -> int:
         req = pb2.OpenRequest(nomeArquivo=nome_arquivo)
@@ -122,14 +118,11 @@ class RemoteFileClient:
     def close(self):
         self.channel.close()
 
-    # ------------------------------------------------------------
-
     def _invalidate_fd(self, fd: int):
         to_remove = [k for k in self.cache.keys() if k[0] == fd]
         for k in to_remove:
             self.cache.pop(k, None)
 
-    # ------------------------------------------------------------
     # Debug / métricas
     def get_cache_hits(self):
         return self.hits
