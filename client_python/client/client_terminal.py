@@ -61,6 +61,9 @@ class ClientTerminal:
     def open(self, parts):
         if len(parts) < 2:
             return self.invalid_command_use('open')
+        
+        if self.fd is not None:
+            return print("Já há um arquivo aberto. Utilize o 'close' para fechá-lo antes de abrir outro.")
 
         nome = parts[1]
         self.fd = self.client_remote_file_sys.abre(nome)
