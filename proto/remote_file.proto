@@ -10,6 +10,7 @@ service RemoteFileSystem {
   rpc Le       (ReadRequest)  returns (ReadResponse);
   rpc Escreve  (WriteRequest) returns (WriteResponse);
   rpc Fecha    (CloseRequest) returns (CloseResponse);
+  rpc Ls       (LsRequest)    returns (LsResponse);
 }
 
 // ---------- Mensagens ----------
@@ -53,4 +54,11 @@ message CloseRequest {
 
 message CloseResponse {
   int32 codigoErro = 1;
+}
+
+message LsRequest {}
+
+message LsResponse {
+  int32 codigoErro = 1;  
+  string conteudo  = 2;
 }

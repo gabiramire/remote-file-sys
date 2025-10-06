@@ -2,8 +2,7 @@ package remotefs.server;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.file.*;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -11,8 +10,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 // Responsável por gerenciar arquivos no servidor localmente.
 public class FileManager {
 
-    private final Path rootDir; // diretório raiz seguro para os arquivos
-    private final AtomicInteger nextFd = new AtomicInteger(100); // começa em 100 só p/ ficar visível
+    private final Path rootDir;
+    private final Path fileListPath;
+    private final AtomicInteger nextFd = new AtomicInteger(100);
     private final Map<Integer, RandomAccessFile> fdToRaf = new ConcurrentHashMap<>();
     private final Map<Integer, Path> fdToPath = new ConcurrentHashMap<>();
     private final Map<Path, AtomicInteger> versionByPath = new ConcurrentHashMap<>();
@@ -20,6 +20,10 @@ public class FileManager {
     public FileManager(Path rootDir) throws IOException {
         this.rootDir = rootDir.toAbsolutePath().normalize();
         Files.createDirectories(this.rootDir);
+        this.fileListPath = rootDir.resolve("file_list");
+        if (!Files.exists(fileListPath)) {
+            Files.createFile(fileListPath);
+        }
     }
 
     // Garante que o path solicitado fique dentro de rootDir.
@@ -37,16 +41,29 @@ public class FileManager {
         if (p.getParent() != null) {
             Files.createDirectories(p.getParent());
         }
+        boolean isNewFile = !Files.exists(p);
         RandomAccessFile raf = new RandomAccessFile(p.toFile(), "rw");
         int fd = nextFd.getAndIncrement();
         fdToRaf.put(fd, raf);
         fdToPath.put(fd, p);
         versionByPath.putIfAbsent(p, new AtomicInteger(0));
+
+        if (isNewFile) {
+            appendToFileList(relativePath);
+        }
+
         return fd;
     }
 
+    // Adiciona o nome de um arquivo ao file_list
+    private synchronized void appendToFileList(String relativePath) throws IOException {
+        try (RandomAccessFile listFile = new RandomAccessFile(fileListPath.toFile(), "rw")) {
+            listFile.seek(listFile.length());
+            listFile.writeBytes(relativePath + System.lineSeparator());
+        }
+    }
+
     // Lê até out.length bytes a partir de pos. Retorna quantos bytes foram lidos
-    // (>=0).
     public int read(int fd, int pos, byte[] out) throws IOException {
         RandomAccessFile raf = fdToRaf.get(fd);
         if (raf == null)
@@ -71,6 +88,13 @@ public class FileManager {
         if (raf != null)
             raf.close();
         fdToPath.remove(fd);
+    }
+
+    // Retorna o conteúdo do file_list (para o comando ls)
+    public synchronized String listFiles() throws IOException {
+        if (!Files.exists(fileListPath))
+            return "";
+        return Files.readString(fileListPath);
     }
 
     // Retorna a versão atual do arquivo associado ao fd.

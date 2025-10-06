@@ -107,4 +107,29 @@ public class FileServiceImpl extends RemoteFileSystemGrpc.RemoteFileSystemImplBa
             responseObserver.onCompleted();
         }
     }
+
+    @Override
+    public void ls(LsRequest request, StreamObserver<LsResponse> responseObserver) {
+        try {
+            String conteudo = fileManager.listFiles();
+
+            LsResponse resp = LsResponse.newBuilder()
+                    .setCodigoErro(0)
+                    .setConteudo(conteudo)
+                    .build();
+
+            responseObserver.onNext(resp);
+            responseObserver.onCompleted();
+
+            System.out.println("[Server] Enviando lista de arquivos.");
+        } catch (IOException e) {
+            LsResponse resp = LsResponse.newBuilder()
+                    .setCodigoErro(-1)
+                    .setConteudo("Erro ao listar arquivos: " + e.getMessage())
+                    .build();
+
+            responseObserver.onNext(resp);
+            responseObserver.onCompleted();
+        }
+    }
 }

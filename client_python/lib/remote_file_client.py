@@ -2,7 +2,6 @@ import grpc
 import configparser
 from collections import OrderedDict
 
-# Importa os stubs gerados do .proto
 from client_python import remote_file_pb2 as pb2
 from client_python import remote_file_pb2_grpc as pb2_grpc
 
@@ -108,6 +107,11 @@ class RemoteFileClient:
         self.versao_por_fd[fd] = res.versao
         self._invalidate_fd(fd)
         return res.bytesEscritos
+
+    def ls(self):
+        req = pb2.LsRequest()
+        res = self.stub.Ls(req)
+        return res
 
     def fecha(self, fd: int):
         req = pb2.CloseRequest(descritor=fd)

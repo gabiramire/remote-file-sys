@@ -1,3 +1,5 @@
+import sys, os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 from client_python.lib.remote_file_client import RemoteFileClient
 
 class ClientTerminal:
@@ -46,6 +48,8 @@ class ClientTerminal:
             case "exit":
                 self.exit()
                 return
+            case "ls":
+                self.ls()
             case _:
                 self.invalid_command()
 
@@ -64,8 +68,12 @@ class ClientTerminal:
         
         if self.fd is not None:
             return print("Já há um arquivo aberto. Utilize o 'close' para fechá-lo antes de abrir outro.")
-
+        
         nome = parts[1]
+
+        if nome == "file_list":
+            return print("O nome 'file_list' é reservado. Escolha outro nome para o arquivo.")
+
         self.fd = self.client_remote_file_sys.abre(nome)
         print(f"Arquivo aberto: '{nome}' (fd={self.fd})")
 
@@ -104,6 +112,17 @@ class ClientTerminal:
         hits = self.client_remote_file_sys.get_cache_hits()
         misses = self.client_remote_file_sys.get_cache_misses()
         print(f"cache hits={hits}, misses={misses}")
+    
+    def ls(self):
+        try:
+            resposta = self.client_remote_file_sys.ls()
+            if resposta.codigo_erro == 0:
+                print("Arquivos no servidor:\n" + resposta.conteudo.strip())
+            else:
+                print("Erro ao listar arquivos:", resposta.conteudo)
+        except Exception as e:
+            print(f"Erro ao executar ls: {e}")
+
 
     def exit(self):
         if self.fd is not None:
@@ -136,6 +155,7 @@ class ClientTerminal:
 
 
 if __name__ == "__main__":
+    print()
     print("== Remote File System - Python Client ==")
     print("Digite 'help' para mostrar os comandos disponíveis.")
     ClientTerminal()
