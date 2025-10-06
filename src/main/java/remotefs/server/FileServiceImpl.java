@@ -49,7 +49,8 @@ public class FileServiceImpl extends RemoteFileSystemGrpc.RemoteFileSystemImplBa
                     .build();
             responseObserver.onNext(resp);
             responseObserver.onCompleted();
-            System.out.println("[Server] Leitura de fd=" + request.getDescritor() + ", bytes=" + n + ", versao=" + versao);
+            System.out.println(
+                    "[Server] Leitura de fd=" + request.getDescritor() + ", bytes=" + n + ", versao=" + versao);
         } catch (IOException | IllegalArgumentException e) {
             ReadResponse resp = ReadResponse.newBuilder()
                     .setCodigoErro(-1)
@@ -75,7 +76,8 @@ public class FileServiceImpl extends RemoteFileSystemGrpc.RemoteFileSystemImplBa
                     .build();
             responseObserver.onNext(resp);
             responseObserver.onCompleted();
-            System.out.println("[Server] Escrita em fd=" + request.getDescritor() + ", bytes=" + data.length + ", nova versao=" + versao);
+            System.out.println("[Server] Escrita em fd=" + request.getDescritor() + ", bytes=" + data.length
+                    + ", nova versao=" + versao);
         } catch (IOException | IllegalArgumentException e) {
             WriteResponse resp = WriteResponse.newBuilder()
                     .setCodigoErro(-1)

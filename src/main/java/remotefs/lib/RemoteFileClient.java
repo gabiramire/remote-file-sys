@@ -23,14 +23,33 @@ public class RemoteFileClient implements AutoCloseable {
 
     private static final class BlockKey {
         final int fd, idx;
-        BlockKey(int fd, int idx) { this.fd = fd; this.idx = idx; }
-        @Override public boolean equals(Object o){ if(!(o instanceof BlockKey b)) return false; return b.fd==fd && b.idx==idx; }
-        @Override public int hashCode(){ return Objects.hash(fd, idx); }
+
+        BlockKey(int fd, int idx) {
+            this.fd = fd;
+            this.idx = idx;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (!(o instanceof BlockKey b))
+                return false;
+            return b.fd == fd && b.idx == idx;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(fd, idx);
+        }
     }
+
     private static final class CacheEntry {
         final byte[] data;
         final int versao;
-        CacheEntry(byte[] data, int versao) { this.data = data; this.versao = versao; }
+
+        CacheEntry(byte[] data, int versao) {
+            this.data = data;
+            this.versao = versao;
+        }
     }
 
     // LRU por acesso
@@ -43,9 +62,9 @@ public class RemoteFileClient implements AutoCloseable {
 
     // ---------- Construtores ----------
 
-    // Constrói lendo host/port/block_size/cache_max_entries de config/config.txt 
-    public RemoteFileClient() {
-        this(new ConfigLoader("config/config.txt"));
+    // Constrói lendo host/port/block_size/cache_max_entries de config/config.txt
+    public RemoteFileClient(String path) {
+        this(new ConfigLoader(path));
     }
 
     public RemoteFileClient(ConfigLoader cfg) {
@@ -58,28 +77,32 @@ public class RemoteFileClient implements AutoCloseable {
         this.blockSize = Math.max(1, blockSize);
         this.capacity = Math.max(1, capacity);
         this.cache = new LinkedHashMap<>(16, 0.75f, true) {
-            @Override protected boolean removeEldestEntry(Map.Entry<BlockKey, CacheEntry> eldest) {
+            @Override
+            protected boolean removeEldestEntry(Map.Entry<BlockKey, CacheEntry> eldest) {
                 return size() > RemoteFileClient.this.capacity;
             }
         };
-        System.out.println("[Client] Conectado a " + host + ":" + port + " | blockSize=" + this.blockSize + " | cap=" + this.capacity);
+        System.out.println("[Client] Conectado a " + host + ":" + port + " | blockSize=" + this.blockSize + " | cap="
+                + this.capacity);
     }
 
     // ---------- API pública ----------
 
-    // Abre/cria arquivo no servidor e retorna seu descritor (fd). 
+    // Abre/cria arquivo no servidor e retorna seu descritor (fd).
     public int abre(String nomeArquivo) {
         OpenResponse res = stub.abre(OpenRequest.newBuilder().setNomeArquivo(nomeArquivo).build());
-        if (res.getCodigoErro() != 0) throw new RuntimeException("abre falhou (codigo=" + res.getCodigoErro() + ")");
+        if (res.getCodigoErro() != 0)
+            throw new RuntimeException("abre falhou (codigo=" + res.getCodigoErro() + ")");
         int fd = res.getDescritor();
         versaoPorFd.put(fd, 0); // desconhecida inicialmente
-        invalidateFd(fd);       // por segurança
+        invalidateFd(fd); // por segurança
         return fd;
     }
 
-    // Lê 'tamanho' bytes a partir de 'pos' do arquivo 'fd'. Usa cache por blocos. 
+    // Lê 'tamanho' bytes a partir de 'pos' do arquivo 'fd'. Usa cache por blocos.
     public byte[] le(int fd, int pos, int tamanho) {
-        if (tamanho <= 0) return new byte[0];
+        if (tamanho <= 0)
+            return new byte[0];
 
         int ini = pos / blockSize;
         int fim = (pos + tamanho - 1) / blockSize;
@@ -91,9 +114,10 @@ public class RemoteFileClient implements AutoCloseable {
         for (int b = ini; b <= fim; b++) {
             int blockStart = b * blockSize;
             int wantStart = Math.max(pos, blockStart);
-            int wantEnd   = Math.min(blockStart + blockSize, pos + tamanho);
-            int wantLen   = Math.max(0, wantEnd - wantStart);
-            if (wantLen == 0) continue;
+            int wantEnd = Math.min(blockStart + blockSize, pos + tamanho);
+            int wantLen = Math.max(0, wantEnd - wantStart);
+            if (wantLen == 0)
+                continue;
 
             BlockKey key = new BlockKey(fd, b);
             CacheEntry entry = cache.get(key);
@@ -113,7 +137,8 @@ public class RemoteFileClient implements AutoCloseable {
                         .setTamanho(blockSize)
                         .build());
 
-                if (resp.getCodigoErro() != 0) throw new RuntimeException("le falhou (codigo=" + resp.getCodigoErro() + ")");
+                if (resp.getCodigoErro() != 0)
+                    throw new RuntimeException("le falhou (codigo=" + resp.getCodigoErro() + ")");
 
                 int verSrv = resp.getVersao();
                 if (verSrv != verLocal) {
@@ -141,14 +166,16 @@ public class RemoteFileClient implements AutoCloseable {
         return out;
     }
 
-    // Escreve 'dados' a partir de 'pos' no arquivo 'fd'. Invalida cache do fd e ajusta versão. */
+    // Escreve 'dados' a partir de 'pos' no arquivo 'fd'. Invalida cache do fd e
+    // ajusta versão. */
     public int escreve(int fd, int pos, byte[] dados) {
         WriteResponse res = stub.escreve(WriteRequest.newBuilder()
                 .setDescritor(fd)
                 .setPosicao(pos)
                 .setConteudo(ByteString.copyFrom(dados))
                 .build());
-        if (res.getCodigoErro() != 0) throw new RuntimeException("escreve falhou (codigo=" + res.getCodigoErro() + ")");
+        if (res.getCodigoErro() != 0)
+            throw new RuntimeException("escreve falhou (codigo=" + res.getCodigoErro() + ")");
 
         int novaVer = res.getVersao();
         versaoPorFd.put(fd, novaVer);
@@ -156,15 +183,16 @@ public class RemoteFileClient implements AutoCloseable {
         return res.getBytesEscritos();
     }
 
-    // Fecha descritor no servidor e limpa cache local desse arquivo. 
+    // Fecha descritor no servidor e limpa cache local desse arquivo.
     public void fecha(int fd) {
         CloseResponse res = stub.fecha(CloseRequest.newBuilder().setDescritor(fd).build());
-        if (res.getCodigoErro() != 0) throw new RuntimeException("fecha falhou (codigo=" + res.getCodigoErro() + ")");
+        if (res.getCodigoErro() != 0)
+            throw new RuntimeException("fecha falhou (codigo=" + res.getCodigoErro() + ")");
         invalidateFd(fd);
         versaoPorFd.remove(fd);
     }
 
-    // Fecha o canal gRPC. 
+    // Fecha o canal gRPC.
     public void shutdown() {
         channel.shutdown();
     }
@@ -176,12 +204,17 @@ public class RemoteFileClient implements AutoCloseable {
 
     // ---------- Utilidades ----------
 
-    // Remove todas as entradas de cache relacionadas a um fd. 
+    // Remove todas as entradas de cache relacionadas a um fd.
     private void invalidateFd(int fd) {
         cache.keySet().removeIf(k -> k.fd == fd);
     }
 
-    // Retorna métricas de cache (para demo/relatório). 
-    public long getCacheHits()   { return hits; }
-    public long getCacheMisses() { return misses; }
+    // Retorna métricas de cache (para demo/relatório).
+    public long getCacheHits() {
+        return hits;
+    }
+
+    public long getCacheMisses() {
+        return misses;
+    }
 }

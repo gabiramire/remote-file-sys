@@ -31,7 +31,7 @@ public class FileManager {
         return p;
     }
 
-    // Abre (ou cria) um arquivo e retorna um descritor inteiro. 
+    // Abre (ou cria) um arquivo e retorna um descritor inteiro.
     public int open(String relativePath) throws IOException {
         Path p = resolveSafe(relativePath);
         if (p.getParent() != null) {
@@ -45,10 +45,12 @@ public class FileManager {
         return fd;
     }
 
-    // Lê até out.length bytes a partir de pos. Retorna quantos bytes foram lidos (>=0). 
+    // Lê até out.length bytes a partir de pos. Retorna quantos bytes foram lidos
+    // (>=0).
     public int read(int fd, int pos, byte[] out) throws IOException {
         RandomAccessFile raf = fdToRaf.get(fd);
-        if (raf == null) throw new IllegalArgumentException("fd inválido: " + fd);
+        if (raf == null)
+            throw new IllegalArgumentException("fd inválido: " + fd);
         raf.seek(Integer.toUnsignedLong(Math.max(0, pos)));
         int n = raf.read(out, 0, out.length);
         return Math.max(n, 0);
@@ -57,7 +59,8 @@ public class FileManager {
     /** Escreve os bytes em 'data' a partir de pos. */
     public void write(int fd, int pos, byte[] data) throws IOException {
         RandomAccessFile raf = fdToRaf.get(fd);
-        if (raf == null) throw new IllegalArgumentException("fd inválido: " + fd);
+        if (raf == null)
+            throw new IllegalArgumentException("fd inválido: " + fd);
         raf.seek(Integer.toUnsignedLong(Math.max(0, pos)));
         raf.write(data);
     }
@@ -65,21 +68,24 @@ public class FileManager {
     // Fecha o descritor.
     public void close(int fd) throws IOException {
         RandomAccessFile raf = fdToRaf.remove(fd);
-        if (raf != null) raf.close();
+        if (raf != null)
+            raf.close();
         fdToPath.remove(fd);
     }
 
     // Retorna a versão atual do arquivo associado ao fd.
     public int getVersionByFd(int fd) {
         Path p = fdToPath.get(fd);
-        if (p == null) return 0;
+        if (p == null)
+            return 0;
         return versionByPath.getOrDefault(p, new AtomicInteger(0)).get();
     }
 
-    // Incrementa e retorna a nova versão do arquivo associado ao fd (após escrita). 
+    // Incrementa e retorna a nova versão do arquivo associado ao fd (após escrita).
     public int bumpVersionByFd(int fd) {
         Path p = fdToPath.get(fd);
-        if (p == null) return 0;
+        if (p == null)
+            return 0;
         return versionByPath.computeIfAbsent(p, __ -> new AtomicInteger(0)).incrementAndGet();
     }
 
