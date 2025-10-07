@@ -39,10 +39,11 @@ message WriteRequest {
   int32 descritor = 1;
   int32 posicao   = 2;
   bytes conteudo  = 3;
+  int32 expected_versao = 4; // versão que o cliente acredita ser a atual
 }
 
 message WriteResponse {
-  int32 codigoErro    = 1;
+  int32 codigoErro    = 1; // 0 ok, <0 erro, 409 conflito de versão
   int32 bytesEscritos = 2;
   int32 versao        = 3; // nova versão após a escrita
 }

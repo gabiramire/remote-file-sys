@@ -166,22 +166,59 @@ public class RemoteFileClient implements AutoCloseable {
         return out;
     }
 
-    // Escreve 'dados' a partir de 'pos' no arquivo 'fd'. Invalida cache do fd e
-    // ajusta versão. */
+    // Escreve 'dados' a partir de 'pos' no arquivo 'fd'.
+    // OCC: envia expected_versao; se 409 (conflito), atualiza versão local e tenta novamente.
+    // Retry com backoff para falhas transitórias de rede.
     public int escreve(int fd, int pos, byte[] dados) {
-        WriteResponse res = stub.escreve(WriteRequest.newBuilder()
-                .setDescritor(fd)
-                .setPosicao(pos)
-                .setConteudo(ByteString.copyFrom(dados))
-                .build());
-        if (res.getCodigoErro() != 0)
-            throw new RuntimeException("escreve falhou (codigo=" + res.getCodigoErro() + ")");
+        final int maxRetries = 3;
+        int attempt = 0;
+        RuntimeException lastEx = null;
 
-        int novaVer = res.getVersao();
-        versaoPorFd.put(fd, novaVer);
-        invalidateFd(fd); // write-through + invalidate
-        return res.getBytesEscritos();
+        while (attempt < maxRetries) {
+            int verLocal = versaoPorFd.getOrDefault(fd, 0);
+            try {
+                WriteResponse res = stub.escreve(WriteRequest.newBuilder()
+                        .setDescritor(fd)
+                        .setPosicao(pos)
+                        .setConteudo(com.google.protobuf.ByteString.copyFrom(dados))
+                        .setExpectedVersao(verLocal) // <- OCC
+                        .build());
+
+                int codigo = res.getCodigoErro();
+                if (codigo == 0) {
+                    int novaVer = res.getVersao();
+                    versaoPorFd.put(fd, novaVer);
+                    invalidateFd(fd); // Cache-Aside: invalida após write
+                    if (attempt > 0) {
+                        System.out.println("[INFO] write OK na tentativa " + (attempt + 1));
+                    }
+                    return res.getBytesEscritos();
+                }
+
+                if (codigo == 409) {
+                    // Conflito: alguém escreveu antes. Atualize versão local e tente de novo.
+                    int versaoAtual = res.getVersao();
+                    versaoPorFd.put(fd, versaoAtual);
+                    invalidateFd(fd);
+                    System.out.println("[WARN] A tentativa de escrita deu conflito com outro cliente (expected=" + verLocal + ", atual=" + versaoAtual + "). Tentando novamente...");
+                    attempt++;
+                    try { Thread.sleep(150L * attempt); } catch (InterruptedException ignored) {}
+                    continue;
+                }
+
+                // Outros erros do servidor
+                throw new RuntimeException("escreve falhou (codigo=" + codigo + ")");
+
+            } catch (RuntimeException e) {
+                lastEx = e;
+                attempt++;
+                System.out.println("[WARN] Falha na escrita (ex=" + e.getMessage() + "), tentativa " + attempt + "/" + maxRetries);
+                try { Thread.sleep(200L * attempt); } catch (InterruptedException ignored) {}
+            }
+        }
+        throw new RuntimeException("Falha após " + maxRetries + " tentativas.", lastEx);
     }
+
 
     // Fecha descritor no servidor e limpa cache local desse arquivo.
     public void fecha(int fd) {

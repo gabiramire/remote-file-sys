@@ -26,7 +26,7 @@ Executar no root:
 
 ``` pip install -r client_python/requirements.txt ```
 
- ``` python3 -m client_python.client.client-python ```
+ ``` python3 -m client_python.client.client_python ```
 
         
 ## Estrutura de Arquivos por enquanto:
