@@ -60,6 +60,7 @@ class ClientTerminal:
                 write <pos> <texto>   - escreve <texto> a partir de 'pos'
                 close                 - fecha o arquivo atual
                 stats                 - mostra hits/misses da cache
+                ls                    - lista arquivos no servidor
                 exit                  - sai""")
 
     def open(self, parts):
@@ -116,13 +117,9 @@ class ClientTerminal:
     def ls(self):
         try:
             resposta = self.client_remote_file_sys.ls()
-            if resposta.codigo_erro == 0:
-                print("Arquivos no servidor:\n" + resposta.conteudo.strip())
-            else:
-                print("Erro ao listar arquivos:", resposta.conteudo)
+            print("Arquivos no servidor:\n" + resposta.conteudo.strip())
         except Exception as e:
             print(f"Erro ao executar ls: {e}")
-
 
     def exit(self):
         if self.fd is not None:

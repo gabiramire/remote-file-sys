@@ -192,6 +192,15 @@ public class RemoteFileClient implements AutoCloseable {
         versaoPorFd.remove(fd);
     }
 
+    // Lista os arquivos do servidor lendo o conteúdo do file_list.
+    // Retorna o resultado como bytes (similar ao método le).
+    public byte[] ls() {
+        LsResponse res = stub.ls(LsRequest.newBuilder().build());
+        if (res.getCodigoErro() != 0)
+            throw new RuntimeException("ls falhou (codigo=" + res.getCodigoErro() + ")");
+        return res.getConteudo().getBytes();
+    }
+
     // Fecha o canal gRPC.
     public void shutdown() {
         channel.shutdown();

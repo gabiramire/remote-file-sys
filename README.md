@@ -51,8 +51,7 @@ Executar no root:
       client/
         ClientJava.java         # cliente exemplo (Java)
 
-    python/
-      lib/
+    client_python/
         remote_file_client.py   # biblioteca (API) equivalente em Python 
         remote_file_pb2.py      # gerado do .proto
         remote_file_pb2_grpc.py # gerado do .proto

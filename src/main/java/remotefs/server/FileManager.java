@@ -94,7 +94,9 @@ public class FileManager {
     public synchronized String listFiles() throws IOException {
         if (!Files.exists(fileListPath))
             return "";
-        return Files.readString(fileListPath);
+
+        // Lê todas as linhas e junta com espaço
+        return String.join(" ", Files.readAllLines(fileListPath)).trim();
     }
 
     // Retorna a versão atual do arquivo associado ao fd.

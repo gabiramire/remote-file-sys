@@ -53,6 +53,7 @@ public class ClientJava {
             case "write" -> write(parts);
             case "close" -> close();
             case "stats" -> stats();
+            case "ls" -> ls();
             case "exit" -> exit();
             default -> invalidCommand();
         }
@@ -66,6 +67,7 @@ public class ClientJava {
                     write <pos> <texto>   - escreve <texto> a partir de 'pos'
                     close                 - fecha o arquivo atual
                     stats                 - mostra hits/misses da cache
+                    ls                    - lista arquivos no servidor
                     exit                  - sai
                 """);
     }
@@ -132,6 +134,16 @@ public class ClientJava {
 
     private void stats() {
         System.out.println("cache hits=" + client.getCacheHits() + ", misses=" + client.getCacheMisses());
+    }
+
+    private void ls() {
+        try {
+            byte[] data = client.ls();
+            System.out.println("Arquivos no servidor:");
+            System.out.println(new String(data, StandardCharsets.UTF_8).trim());
+        } catch (Exception e) {
+            System.out.println("Erro ao executar ls: " + e.getMessage());
+        }
     }
 
     private void exit() {
