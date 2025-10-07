@@ -40,6 +40,7 @@ message WriteRequest {
   int32 descritor = 1;
   int32 posicao   = 2;
   bytes conteudo  = 3;
+  int32 expected_versao = 4;
 }
 
 message WriteResponse {

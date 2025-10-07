@@ -65,19 +65,39 @@ public class FileServiceImpl extends RemoteFileSystemGrpc.RemoteFileSystemImplBa
     @Override
     public void escreve(WriteRequest request, StreamObserver<WriteResponse> responseObserver) {
         try {
+            int fd = request.getDescritor();
+            int expected = request.getExpectedVersao(); // pode vir 0 se cliente não souber
+            int versaoAtual = fileManager.getVersionByFd(fd);
+
+            // OCC: se o cliente informou versão esperada e está diferente, retorna conflito
+            // (409)
+            if (expected != 0 && expected != versaoAtual) {
+                WriteResponse resp = WriteResponse.newBuilder()
+                        .setCodigoErro(409) // conflito
+                        .setBytesEscritos(0)
+                        .setVersao(versaoAtual) // diga ao cliente qual é a versão atual
+                        .build();
+                responseObserver.onNext(resp);
+                responseObserver.onCompleted();
+                System.out
+                        .println("[Server] CONFLITO OCC fd=" + fd + " expected=" + expected + " atual=" + versaoAtual);
+                return;
+            }
+
+            // Sem conflito -> aplica escrita
             byte[] data = request.getConteudo().toByteArray();
-            fileManager.write(request.getDescritor(), request.getPosicao(), data);
-            int versao = fileManager.bumpVersionByFd(request.getDescritor());
+            fileManager.write(fd, request.getPosicao(), data);
+            int novaVersao = fileManager.bumpVersionByFd(fd);
 
             WriteResponse resp = WriteResponse.newBuilder()
                     .setCodigoErro(0)
                     .setBytesEscritos(data.length)
-                    .setVersao(versao)
+                    .setVersao(novaVersao)
                     .build();
             responseObserver.onNext(resp);
             responseObserver.onCompleted();
-            System.out.println("[Server] Escrita em fd=" + request.getDescritor() + ", bytes=" + data.length
-                    + ", nova versao=" + versao);
+            System.out.println("[Server] Escrita OK fd=" + fd + " bytes=" + data.length + " novaVersao=" + novaVersao);
+
         } catch (IOException | IllegalArgumentException e) {
             WriteResponse resp = WriteResponse.newBuilder()
                     .setCodigoErro(-1)

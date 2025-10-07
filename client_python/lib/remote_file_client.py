@@ -99,14 +99,34 @@ class RemoteFileClient:
         return bytes(resultado)
 
     def escreve(self, fd: int, pos: int, dados: bytes) -> int:
-        req = pb2.WriteRequest(descritor=fd, posicao=pos, conteudo=dados)
-        res = self.stub.Escreve(req)
-        if res.codigoErro != 0:
-            raise RuntimeError(f"Erro ao escrever, codigo={res.codigoErro}")
+        tentativas = 3
+        for tentativa in range(1, tentativas + 1):
+            ver_local = self.versao_por_fd.get(fd, 0)
 
-        self.versao_por_fd[fd] = res.versao
-        self._invalidate_fd(fd)
-        return res.bytesEscritos
+            req = pb2.WriteRequest(
+                descritor=fd,
+                posicao=pos,
+                conteudo=dados,
+                expected_versao=ver_local
+            )
+            res = self.stub.Escreve(req)
+
+            if res.codigoErro == 0:
+                # Sucesso
+                self.versao_por_fd[fd] = res.versao
+                self._invalidate_fd(fd)
+                return res.bytesEscritos
+
+            elif res.codigoErro == 409:  # Conflito OCC
+                print(f"[WARN] A tentativa de escrita deu conflito com outro cliente (expected={ver_local}, atual={res.versao}). Tentando novamente...")
+                self._invalidate_fd(fd)
+                self.versao_por_fd[fd] = res.versao
+                continue  # tenta de novo
+
+            else:
+                raise RuntimeError(f"Erro ao escrever, codigo={res.codigoErro}")
+
+        raise RuntimeError("Falha após múltiplas tentativas de OCC")
 
     def ls(self):
         req = pb2.LsRequest()

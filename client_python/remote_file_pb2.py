@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x11remote_file.proto\x12\x08remotefs\"\"\n\x0bOpenRequest\x12\x13\n\x0bnomeArquivo\x18\x01 \x01(\t\"5\n\x0cOpenResponse\x12\x12\n\ncodigoErro\x18\x01 \x01(\x05\x12\x11\n\tdescritor\x18\x02 \x01(\x05\"B\n\x0bReadRequest\x12\x11\n\tdescritor\x18\x01 \x01(\x05\x12\x0f\n\x07posicao\x18\x02 \x01(\x05\x12\x0f\n\x07tamanho\x18\x03 \x01(\x05\"D\n\x0cReadResponse\x12\x12\n\ncodigoErro\x18\x01 \x01(\x05\x12\x10\n\x08\x63onteudo\x18\x02 \x01(\x0c\x12\x0e\n\x06versao\x18\x03 \x01(\x05\"D\n\x0cWriteRequest\x12\x11\n\tdescritor\x18\x01 \x01(\x05\x12\x0f\n\x07posicao\x18\x02 \x01(\x05\x12\x10\n\x08\x63onteudo\x18\x03 \x01(\x0c\"J\n\rWriteResponse\x12\x12\n\ncodigoErro\x18\x01 \x01(\x05\x12\x15\n\rbytesEscritos\x18\x02 \x01(\x05\x12\x0e\n\x06versao\x18\x03 \x01(\x05\"!\n\x0c\x43loseRequest\x12\x11\n\tdescritor\x18\x01 \x01(\x05\"#\n\rCloseResponse\x12\x12\n\ncodigoErro\x18\x01 \x01(\x05\"\x0b\n\tLsRequest\"2\n\nLsResponse\x12\x12\n\ncodigoErro\x18\x01 \x01(\x05\x12\x10\n\x08\x63onteudo\x18\x02 \x01(\t2\xa5\x02\n\x10RemoteFileSystem\x12\x35\n\x04\x41\x62re\x12\x15.remotefs.OpenRequest\x1a\x16.remotefs.OpenResponse\x12\x33\n\x02Le\x12\x15.remotefs.ReadRequest\x1a\x16.remotefs.ReadResponse\x12:\n\x07\x45screve\x12\x16.remotefs.WriteRequest\x1a\x17.remotefs.WriteResponse\x12\x38\n\x05\x46\x65\x63ha\x12\x16.remotefs.CloseRequest\x1a\x17.remotefs.CloseResponse\x12/\n\x02Ls\x12\x13.remotefs.LsRequest\x1a\x14.remotefs.LsResponseB\x0c\n\x08remotefsP\x01\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x11remote_file.proto\x12\x08remotefs\"\"\n\x0bOpenRequest\x12\x13\n\x0bnomeArquivo\x18\x01 \x01(\t\"5\n\x0cOpenResponse\x12\x12\n\ncodigoErro\x18\x01 \x01(\x05\x12\x11\n\tdescritor\x18\x02 \x01(\x05\"B\n\x0bReadRequest\x12\x11\n\tdescritor\x18\x01 \x01(\x05\x12\x0f\n\x07posicao\x18\x02 \x01(\x05\x12\x0f\n\x07tamanho\x18\x03 \x01(\x05\"D\n\x0cReadResponse\x12\x12\n\ncodigoErro\x18\x01 \x01(\x05\x12\x10\n\x08\x63onteudo\x18\x02 \x01(\x0c\x12\x0e\n\x06versao\x18\x03 \x01(\x05\"]\n\x0cWriteRequest\x12\x11\n\tdescritor\x18\x01 \x01(\x05\x12\x0f\n\x07posicao\x18\x02 \x01(\x05\x12\x10\n\x08\x63onteudo\x18\x03 \x01(\x0c\x12\x17\n\x0f\x65xpected_versao\x18\x04 \x01(\x05\"J\n\rWriteResponse\x12\x12\n\ncodigoErro\x18\x01 \x01(\x05\x12\x15\n\rbytesEscritos\x18\x02 \x01(\x05\x12\x0e\n\x06versao\x18\x03 \x01(\x05\"!\n\x0c\x43loseRequest\x12\x11\n\tdescritor\x18\x01 \x01(\x05\"#\n\rCloseResponse\x12\x12\n\ncodigoErro\x18\x01 \x01(\x05\"\x0b\n\tLsRequest\"2\n\nLsResponse\x12\x12\n\ncodigoErro\x18\x01 \x01(\x05\x12\x10\n\x08\x63onteudo\x18\x02 \x01(\t2\xa5\x02\n\x10RemoteFileSystem\x12\x35\n\x04\x41\x62re\x12\x15.remotefs.OpenRequest\x1a\x16.remotefs.OpenResponse\x12\x33\n\x02Le\x12\x15.remotefs.ReadRequest\x1a\x16.remotefs.ReadResponse\x12:\n\x07\x45screve\x12\x16.remotefs.WriteRequest\x1a\x17.remotefs.WriteResponse\x12\x38\n\x05\x46\x65\x63ha\x12\x16.remotefs.CloseRequest\x1a\x17.remotefs.CloseResponse\x12/\n\x02Ls\x12\x13.remotefs.LsRequest\x1a\x14.remotefs.LsResponseB\x0c\n\x08remotefsP\x01\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -41,17 +41,17 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_READRESPONSE']._serialized_start=190
   _globals['_READRESPONSE']._serialized_end=258
   _globals['_WRITEREQUEST']._serialized_start=260
-  _globals['_WRITEREQUEST']._serialized_end=328
-  _globals['_WRITERESPONSE']._serialized_start=330
-  _globals['_WRITERESPONSE']._serialized_end=404
-  _globals['_CLOSEREQUEST']._serialized_start=406
-  _globals['_CLOSEREQUEST']._serialized_end=439
-  _globals['_CLOSERESPONSE']._serialized_start=441
-  _globals['_CLOSERESPONSE']._serialized_end=476
-  _globals['_LSREQUEST']._serialized_start=478
-  _globals['_LSREQUEST']._serialized_end=489
-  _globals['_LSRESPONSE']._serialized_start=491
-  _globals['_LSRESPONSE']._serialized_end=541
-  _globals['_REMOTEFILESYSTEM']._serialized_start=544
-  _globals['_REMOTEFILESYSTEM']._serialized_end=837
+  _globals['_WRITEREQUEST']._serialized_end=353
+  _globals['_WRITERESPONSE']._serialized_start=355
+  _globals['_WRITERESPONSE']._serialized_end=429
+  _globals['_CLOSEREQUEST']._serialized_start=431
+  _globals['_CLOSEREQUEST']._serialized_end=464
+  _globals['_CLOSERESPONSE']._serialized_start=466
+  _globals['_CLOSERESPONSE']._serialized_end=501
+  _globals['_LSREQUEST']._serialized_start=503
+  _globals['_LSREQUEST']._serialized_end=514
+  _globals['_LSRESPONSE']._serialized_start=516
+  _globals['_LSRESPONSE']._serialized_end=566
+  _globals['_REMOTEFILESYSTEM']._serialized_start=569
+  _globals['_REMOTEFILESYSTEM']._serialized_end=862
 # @@protoc_insertion_point(module_scope)
