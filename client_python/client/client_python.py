@@ -2,7 +2,7 @@ import sys, os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 from client_python.lib.remote_file_client import RemoteFileClient
 
-class ClientTerminal:
+class ClientPython:
     def __init__(self):
         self.client_remote_file_sys = RemoteFileClient("config/config.txt")
         self.fd = None
@@ -155,4 +155,4 @@ if __name__ == "__main__":
     print()
     print("== Remote File System - Python Client ==")
     print("Digite 'help' para mostrar os comandos disponíveis.")
-    ClientTerminal()
+    ClientPython()
